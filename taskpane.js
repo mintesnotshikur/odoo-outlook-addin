@@ -1,5 +1,5 @@
 const ODOO_URL = "https://dablo.grace-erp-consultancy.com";
-const DB_NAME = "dablo_db"; // Ensure this is your correct DB name
+const DB_NAME = "dablo_DB"; // Ensure this is your correct DB name
 const JSON_RPC_PATH = "/jsonrpc";
 
 Office.onReady((info) => {
@@ -33,6 +33,7 @@ async function runPush() {
 
         const item = Office.context.mailbox.item;
         const senderEmail = item.from?.emailAddress || item.sender?.emailAddress || "Unknown sender";
+        const bodyPreview = item.body?.preview || "No preview available";
 
         status.innerText = "Creating record...";
         const newId = await odooRpc("object", "execute_kw", [
