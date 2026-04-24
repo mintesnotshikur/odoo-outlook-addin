@@ -43,7 +43,7 @@ async function runPush() {
             [{
                 name: `Email: ${item.subject || "No subject"}`,
                 description: `From: ${senderEmail}`,
-                email: email // Replace with your real Odoo custom field name.
+                email_from: email // Replace with your real Odoo custom field name.
             }]
         ]);
 
