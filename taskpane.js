@@ -1,6 +1,7 @@
 const ODOO_URL = "https://dablo.grace-erp-consultancy.com";
 const DB_NAME = "dablo_DB"; // Ensure this is your correct DB name
 const JSON_RPC_PATH = "/jsonrpc";
+const ODOO_PROXY_URL = ""; // Optional: point this to your own relay endpoint to avoid browser CORS issues.
 
 Office.onReady((info) => {
     if (info.host === Office.HostType.Outlook) {
@@ -56,20 +57,42 @@ async function runPush() {
 }
 
 async function odooRpc(service, method, args) {
-    const response = await fetch(`${ODOO_URL}${JSON_RPC_PATH}`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-            jsonrpc: "2.0",
-            method: "call",
-            params: {
-                service,
-                method,
-                args
-            },
-            id: Date.now()
-        })
-    });
+    const payload = {
+        jsonrpc: "2.0",
+        method: "call",
+        params: {
+            service,
+            method,
+            args
+        },
+        id: Date.now()
+    };
+
+    const requestUrl = ODOO_PROXY_URL || `${ODOO_URL}${JSON_RPC_PATH}`;
+    const requestOptions = ODOO_PROXY_URL
+        ? {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(payload)
+        }
+        : {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(payload)
+        };
+
+    let response;
+
+    try {
+        response = await fetch(requestUrl, requestOptions);
+    } catch (err) {
+        if (err instanceof TypeError) {
+            throw new Error(
+                "Browser blocked the request to Odoo. Enable CORS on the Odoo server or send requests through your own backend proxy."
+            );
+        }
+        throw err;
+    }
 
     if (!response.ok) {
         throw new Error(`Odoo request failed with status ${response.status}.`);
