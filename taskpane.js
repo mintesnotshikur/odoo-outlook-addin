@@ -1,5 +1,6 @@
 const ODOO_URL = "https://dablo.grace-erp-consultancy.com";
 const DB_NAME = "dablo_db"; // Ensure this is your correct DB name
+const JSON_RPC_PATH = "/jsonrpc";
 
 Office.onReady((info) => {
     if (info.host === Office.HostType.Outlook) {
@@ -9,58 +10,76 @@ Office.onReady((info) => {
 
 async function runPush() {
     const status = document.getElementById("status");
+    const button = document.getElementById("btnPush");
     const user = document.getElementById("username").value;
     const pass = document.getElementById("password").value;
     const customVal = document.getElementById("custom_field").value;
 
+    if (!user || !pass) {
+        status.innerText = "Enter your Odoo email and password or API key.";
+        return;
+    }
+
     status.innerText = "Authenticating...";
+    button.disabled = true;
 
     try {
-        // 1. Authenticate to get UID
-        const uid = await odooRpc("/xmlrpc/2/common", "authenticate", [DB_NAME, user, pass, {}]);
-        
+        const uid = await odooRpc("common", "authenticate", [DB_NAME, user, pass, {}]);
+
         if (!uid) {
             status.innerText = "Error: Invalid Credentials.";
             return;
         }
 
-        // 2. Get Email Data from Outlook
         const item = Office.context.mailbox.item;
-        
-        // 3. Create Record in Odoo (Example: CRM Lead)
+        const senderEmail = item.from?.emailAddress || item.sender?.emailAddress || "Unknown sender";
+
         status.innerText = "Creating record...";
-        const newId = await odooRpc("/xmlrpc/2/object", "execute_kw", [
+        const newId = await odooRpc("object", "execute_kw", [
             DB_NAME, uid, pass,
-            'crm.lead', 'create', 
+            "crm.lead", "create",
             [{
-                'name': `Email: ${item.subject}`,
-                'description': `From: ${item.from.emailAddress}`,
-                'x_custom_field': customVal // REPLACE THIS with your actual Odoo custom field name
+                name: `Email: ${item.subject || "No subject"}`,
+                description: `From: ${senderEmail}`,
+                service_type: customVal // Replace with your real Odoo custom field name.
             }]
         ]);
 
         status.innerText = `Success! Record ID: ${newId}`;
     } catch (err) {
-        status.innerText = "Error: " + err.message;
+        status.innerText = `Error: ${err.message}`;
         console.error(err);
+    } finally {
+        button.disabled = false;
     }
 }
 
-async function odooRpc(path, method, params) {
-    const response = await fetch(`${ODOO_URL}${path}`, {
+async function odooRpc(service, method, args) {
+    const response = await fetch(`${ODOO_URL}${JSON_RPC_PATH}`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
             jsonrpc: "2.0",
             method: "call",
             params: {
-                service: path.includes("common") ? "common" : "object",
-                method: method,
-                args: params
-            }
+                service,
+                method,
+                args
+            },
+            id: Date.now()
         })
     });
+
+    if (!response.ok) {
+        throw new Error(`Odoo request failed with status ${response.status}.`);
+    }
+
     const result = await response.json();
-    if (result.error) throw new Error(result.error.data.message);
+
+    if (result.error) {
+        const message = result.error.data?.message || result.error.message || "Unknown Odoo error.";
+        throw new Error(message);
+    }
+
     return result.result;
 }
