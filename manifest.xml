@@ -6,7 +6,7 @@
     <DefaultLocale>en-US</DefaultLocale>
     <DisplayName DefaultValue="Odoo Custom Bridge" />
     <Description DefaultValue="Push emails to custom fields in Odoo." />
-    <IconUrl DefaultValue="https://YOUR_USER.github.io/YOUR_REPO/icon-32.png" />
+    <IconUrl DefaultValue="https://www.odoo.com/web/image/website/1/logo/Odoo" />
     <Hosts>
         <Host Name="Mailbox" />
     </Hosts>
@@ -16,7 +16,7 @@
     <FormSettings>
         <Form xsi:type="ItemRead">
             <DesktopSettings>
-                <SourceLocation DefaultValue="https://YOUR_USER.github.io/YOUR_REPO/index.html" />
+                <SourceLocation DefaultValue="https://mintesnotshikur.github.io/odoo-outlook-addin/index.html" />
                 <RequestedHeight>450</RequestedHeight>
             </DesktopSettings>
         </Form>
