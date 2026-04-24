@@ -1,5 +1,5 @@
 const ODOO_URL = "https://dablo.grace-erp-consultancy.com";
-const DB_NAME = "dablo"; // Ensure this is your correct DB name
+const DB_NAME = "dablo_db"; // Ensure this is your correct DB name
 
 Office.onReady((info) => {
     if (info.host === Office.HostType.Outlook) {
