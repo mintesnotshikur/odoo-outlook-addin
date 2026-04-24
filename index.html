@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8" />
+    <title>Odoo Bridge</title>
+    <script src="https://appsforoffice.microsoft.com/lib/1/hosted/office.js"></script>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; padding: 15px; color: #333; }
+        input { width: 100%; padding: 8px; margin-bottom: 10px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; }
+        button { width: 100%; padding: 10px; background: #714B67; color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; }
+        button:hover { background: #5a3c52; }
+        .status { margin-top: 15px; font-size: 13px; font-style: italic; }
+    </style>
+</head>
+<body>
+    <h3>Odoo Grace Bridge</h3>
+    <label>Odoo User (Email)</label>
+    <input type="text" id="username" placeholder="admin@example.com">
+    <label>API Key / Password</label>
+    <input type="password" id="password" placeholder="••••••••">
+    <label>Custom Field Value</label>
+    <input type="text" id="custom_field" placeholder="Enter custom data">
+    
+    <button id="btnPush">Push to CRM Lead</button>
+    
+    <div id="status" class="status">Ready.</div>
+
+    <script src="taskpane.js"></script>
+</body>
+</html>
