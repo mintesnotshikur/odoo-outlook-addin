@@ -14,7 +14,7 @@ async function runPush() {
     const button = document.getElementById("btnPush");
     const user = document.getElementById("username").value;
     const pass = document.getElementById("password").value;
-    const email = document.getElementById("email").value;
+    const email_from = document.getElementById("email_from").value;
 
     if (!user || !pass) {
         status.innerText = "Enter your Odoo email and password or API key.";
@@ -43,7 +43,7 @@ async function runPush() {
             [{
                 name: `Email: ${item.subject || "No subject"}`,
                 description: `From: ${senderEmail}`,
-                email_from: email // Replace with your real Odoo custom field name.
+                email_from: email_from // Replace with your real Odoo custom field name.
             }]
         ]);
 
