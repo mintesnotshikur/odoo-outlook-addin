@@ -6,30 +6,38 @@
     <script src="https://appsforoffice.microsoft.com/lib/1/hosted/office.js"></script>
     <style>
         body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; padding: 15px; color: #333; }
+        h4 { margin: 0 0 12px; color: #4f3b49; }
         input { width: 100%; padding: 8px; margin-bottom: 10px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; }
         button { width: 100%; padding: 10px; background: #714B67; color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; }
         button:hover { background: #5a3c52; }
         button.secondary { margin-top: 8px; background: #f1edf0; color: #4f3b49; border: 1px solid #d7c6d0; }
         button.secondary:hover { background: #e5d9e0; }
         .status { margin-top: 15px; font-size: 13px; font-style: italic; }
-        .saved-auth { margin-bottom: 12px; padding: 10px; background: #f7f2f5; border: 1px solid #e3d4dc; border-radius: 6px; font-size: 13px; display: none; }
+        .card { padding: 14px; background: #fcfafb; border: 1px solid #eadfe5; border-radius: 8px; }
+        .saved-auth { margin-bottom: 12px; padding: 10px; background: #f7f2f5; border: 1px solid #e3d4dc; border-radius: 6px; font-size: 13px; }
         .hidden { display: none; }
     </style>
 </head>
 <body>
     <h3>Odoo Grace Bridge</h3>
-    <div id="savedAuth" class="saved-auth"></div>
-    <div id="authFields">
+
+    <div id="loginView" class="card">
+        <h4>Sign In</h4>
         <label>Odoo User (Email)</label>
         <input type="text" id="username" placeholder="admin@example.com">
         <label>API Key / Password</label>
         <input type="password" id="password" placeholder="••••••••">
+        <button id="btnLogin" type="button">Sign in to Odoo</button>
     </div>
-    <label>Email</label>
-    <input type="email" id="email_from" placeholder="Enter email for CRM Lead">
-    
-    <button id="btnPush">Push to CRM Lead</button>
-    <button id="btnResetAuth" class="secondary hidden" type="button">Use different Odoo account</button>
+
+    <div id="pipelineView" class="card hidden">
+        <h4>CRM Pipeline</h4>
+        <div id="savedAuth" class="saved-auth"></div>
+        <label>Email</label>
+        <input type="email" id="email_from" placeholder="Enter email for CRM Lead">
+        <button id="btnPush" type="button">Push to CRM Lead</button>
+        <button id="btnResetAuth" class="secondary" type="button">Use different Odoo account</button>
+    </div>
     
     <div id="status" class="status">Ready.</div>
 

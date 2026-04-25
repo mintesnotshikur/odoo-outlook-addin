@@ -6,19 +6,18 @@ const AUTH_STORAGE_KEY = "odooBridgeAuth";
 
 Office.onReady((info) => {
     if (info.host === Office.HostType.Outlook) {
+        document.getElementById("btnLogin").onclick = loginToOdoo;
         document.getElementById("btnPush").onclick = runPush;
         document.getElementById("btnResetAuth").onclick = clearSavedAuth;
         restoreSavedAuth();
     }
 });
 
-async function runPush() {
+async function loginToOdoo() {
     const status = document.getElementById("status");
-    const button = document.getElementById("btnPush");
-    const auth = getAuthValues();
-    const user = auth.username;
-    const pass = auth.password;
-    const email_from = document.getElementById("email_from").value;
+    const button = document.getElementById("btnLogin");
+    const user = document.getElementById("username").value.trim();
+    const pass = document.getElementById("password").value;
 
     if (!user || !pass) {
         status.innerText = "Enter your Odoo email and password or API key.";
@@ -36,12 +35,48 @@ async function runPush() {
             return;
         }
 
+        await saveAuth(user, pass);
+        showPipelineView(user);
+        prefillLeadEmail();
+        status.innerText = `Signed in as ${user}.`;
+    } catch (err) {
+        status.innerText = `Error: ${err.message}`;
+        console.error(err);
+    } finally {
+        button.disabled = false;
+    }
+}
+
+async function runPush() {
+    const status = document.getElementById("status");
+    const button = document.getElementById("btnPush");
+    const auth = getAuthValues();
+    const user = auth.username;
+    const pass = auth.password;
+    const email_from = document.getElementById("email_from").value.trim();
+
+    if (!user || !pass) {
+        showLoginView();
+        status.innerText = "Sign in to Odoo first.";
+        return;
+    }
+
+    status.innerText = "Creating record...";
+    button.disabled = true;
+
+    try {
+        const uid = await odooRpc("common", "authenticate", [DB_NAME, user, pass, {}]);
+
+        if (!uid) {
+            showLoginView();
+            status.innerText = "Saved sign-in is no longer valid. Please sign in again.";
+            return;
+        }
+
         const item = Office.context.mailbox.item;
         const senderEmail = item.from?.emailAddress || item.sender?.emailAddress || "Unknown sender";
-        await saveAuth(user, pass);
-        showSavedAuth(user);
+        showPipelineView(user);
 
-        status.innerText = "Creating record...";
         const newId = await odooRpc("object", "execute_kw", [
             DB_NAME, uid, pass,
             "crm.lead", "create",
@@ -130,13 +165,14 @@ function restoreSavedAuth() {
     const savedAuth = loadSavedAuth();
 
     if (!savedAuth?.username || !savedAuth?.password) {
-        showManualAuth();
+        showLoginView();
         return;
     }
 
     document.getElementById("username").value = savedAuth.username;
     document.getElementById("password").value = savedAuth.password;
-    showSavedAuth(savedAuth.username);
+    showPipelineView(savedAuth.username);
+    prefillLeadEmail();
     document.getElementById("status").innerText = `Signed in as ${savedAuth.username}.`;
 }
 
@@ -184,30 +220,37 @@ async function clearSavedAuth() {
 
     document.getElementById("username").value = "";
     document.getElementById("password").value = "";
-    showManualAuth();
+    document.getElementById("email_from").value = "";
+    showLoginView();
     status.innerText = "Saved sign-in removed. Enter another Odoo account.";
 }
 
-function showSavedAuth(username) {
+function showPipelineView(username) {
     const savedAuth = document.getElementById("savedAuth");
-    const authFields = document.getElementById("authFields");
-    const resetButton = document.getElementById("btnResetAuth");
+    const loginView = document.getElementById("loginView");
+    const pipelineView = document.getElementById("pipelineView");
 
     savedAuth.innerText = `Using saved Odoo sign-in for ${username}.`;
-    savedAuth.style.display = "block";
-    authFields.classList.add("hidden");
-    resetButton.classList.remove("hidden");
+    loginView.classList.add("hidden");
+    pipelineView.classList.remove("hidden");
 }
 
-function showManualAuth() {
-    const savedAuth = document.getElementById("savedAuth");
-    const authFields = document.getElementById("authFields");
-    const resetButton = document.getElementById("btnResetAuth");
+function showLoginView() {
+    const loginView = document.getElementById("loginView");
+    const pipelineView = document.getElementById("pipelineView");
 
-    savedAuth.style.display = "none";
-    savedAuth.innerText = "";
-    authFields.classList.remove("hidden");
-    resetButton.classList.add("hidden");
+    loginView.classList.remove("hidden");
+    pipelineView.classList.add("hidden");
+}
+
+function prefillLeadEmail() {
+    const emailInput = document.getElementById("email_from");
+    const item = Office.context?.mailbox?.item;
+    const senderEmail = item?.from?.emailAddress || item?.sender?.emailAddress || "";
+
+    if (!emailInput.value && senderEmail) {
+        emailInput.value = senderEmail;
+    }
 }
 
 function saveRoamingSettings(roamingSettings) {
