@@ -53,7 +53,10 @@ async function runPush() {
     const auth = getAuthValues();
     const user = auth.username;
     const pass = auth.password;
-    const email_from = document.getElementById("email_from").value.trim();
+    const item = Office.context.mailbox.item;
+    const senderName = getSenderName(item);
+    const senderEmail = getSenderEmail(item);
+    const email_from = document.getElementById("email_from").value.trim() || senderEmail;
 
     if (!user || !pass) {
         showLoginView();
@@ -61,7 +64,12 @@ async function runPush() {
         return;
     }
 
-    status.innerText = "Creating record...";
+    if (!email_from) {
+        status.innerText = "No sender email found. Enter an email before creating the lead.";
+        return;
+    }
+
+    status.innerText = "Checking client...";
     button.disabled = true;
 
     try {
@@ -73,21 +81,27 @@ async function runPush() {
             return;
         }
 
-        const item = Office.context.mailbox.item;
-        const senderEmail = item.from?.emailAddress || item.sender?.emailAddress || "Unknown sender";
         showPipelineView(user);
+        document.getElementById("email_from").value = email_from;
 
+        const partner = await ensurePartner(uid, pass, senderName, email_from);
+
+        status.innerText = partner.created
+            ? `Created client ${partner.name}. Creating lead...`
+            : `Found client ${partner.name}. Creating lead...`;
         const newId = await odooRpc("object", "execute_kw", [
             DB_NAME, uid, pass,
             "crm.lead", "create",
             [{
                 name: `Email: ${item.subject || "No subject"}`,
                 description: `From: ${senderEmail}`,
-                email_from: email_from // Replace with your real Odoo custom field name.
+                email_from,
+                partner_id: partner.id,
+                partner_name: partner.name
             }]
         ]);
 
-        status.innerText = `Success! Record ID: ${newId}`;
+        status.innerText = `Success! Lead ${newId} linked to ${partner.name}.`;
     } catch (err) {
         status.innerText = `Error: ${err.message}`;
         console.error(err);
@@ -246,11 +260,55 @@ function showLoginView() {
 function prefillLeadEmail() {
     const emailInput = document.getElementById("email_from");
     const item = Office.context?.mailbox?.item;
-    const senderEmail = item?.from?.emailAddress || item?.sender?.emailAddress || "";
+    const senderEmail = getSenderEmail(item);
 
     if (!emailInput.value && senderEmail) {
         emailInput.value = senderEmail;
     }
+}
+
+async function ensurePartner(uid, pass, senderName, email) {
+    const existingPartners = await odooRpc("object", "execute_kw", [
+        DB_NAME, uid, pass,
+        "res.partner", "search_read",
+        [[["email", "=ilike", email]]],
+        {
+            fields: ["id", "name", "email"],
+            limit: 1
+        }
+    ]);
+
+    if (existingPartners.length > 0) {
+        return {
+            ...existingPartners[0],
+            created: false
+        };
+    }
+
+    const partnerName = senderName || email;
+    const partnerId = await odooRpc("object", "execute_kw", [
+        DB_NAME, uid, pass,
+        "res.partner", "create",
+        [{
+            name: partnerName,
+            email
+        }]
+    ]);
+
+    return {
+        id: partnerId,
+        name: partnerName,
+        email,
+        created: true
+    };
+}
+
+function getSenderEmail(item) {
+    return item?.from?.emailAddress || item?.sender?.emailAddress || "";
+}
+
+function getSenderName(item) {
+    return item?.from?.displayName || item?.sender?.displayName || "";
 }
 
 function saveRoamingSettings(roamingSettings) {
