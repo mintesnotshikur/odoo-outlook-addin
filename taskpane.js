@@ -85,6 +85,8 @@ async function runPush() {
         document.getElementById("email_from").value = email_from;
 
         const partner = await ensurePartner(uid, pass, senderName, email_from);
+        const emailBody = await getEmailBodyText(item);
+        const description = buildLeadDescription(senderEmail, emailBody);
 
         status.innerText = partner.created
             ? `Created client ${partner.name}. Creating lead...`
@@ -94,7 +96,7 @@ async function runPush() {
             "crm.lead", "create",
             [{
                 name: `Email: ${item.subject || "No subject"}`,
-                description: `From: ${senderEmail}`,
+                description,
                 email_from,
                 partner_id: partner.id,
                 partner_name: partner.name
@@ -309,6 +311,35 @@ function getSenderEmail(item) {
 
 function getSenderName(item) {
     return item?.from?.displayName || item?.sender?.displayName || "";
+}
+
+function getEmailBodyText(item) {
+    return new Promise((resolve) => {
+        if (!item?.body?.getAsync) {
+            resolve("");
+            return;
+        }
+
+        item.body.getAsync(Office.CoercionType.Text, (result) => {
+            if (result.status === Office.AsyncResultStatus.Succeeded) {
+                resolve((result.value || "").trim());
+                return;
+            }
+
+            console.error("Failed to read email body.", result.error);
+            resolve("");
+        });
+    });
+}
+
+function buildLeadDescription(senderEmail, emailBody) {
+    const sections = [`From: ${senderEmail || "Unknown sender"}`];
+
+    if (emailBody) {
+        sections.push("", "Body:", emailBody);
+    }
+
+    return sections.join("\n");
 }
 
 function saveRoamingSettings(roamingSettings) {
