@@ -57,6 +57,7 @@ async function runPush() {
     const senderName = getSenderName(item);
     const senderEmail = getSenderEmail(item);
     const email_from = document.getElementById("email_from").value.trim() || senderEmail;
+    const opportunityName = document.getElementById("opportunity_name").value.trim() || item.subject || "No subject";
 
     if (!user || !pass) {
         showLoginView();
@@ -95,7 +96,7 @@ async function runPush() {
             DB_NAME, uid, pass,
             "crm.lead", "create",
             [{
-                name: `Email: ${item.subject || "No subject"}`,
+                name: `Email: ${opportunityName}`,
                 description,
                 email_from,
                 partner_id: partner.id,
@@ -339,7 +340,8 @@ function buildLeadDescription(senderEmail, emailBody) {
         sections.push("", "Body:", emailBody);
     }
 
-    return sections.join("\n");
+    return emailBody;
+    // return sections.join("\n");
 }
 
 function saveRoamingSettings(roamingSettings) {
