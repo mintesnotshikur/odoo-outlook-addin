@@ -96,7 +96,7 @@ async function runPush() {
             DB_NAME, uid, pass,
             "crm.lead", "create",
             [{
-                name: `Email: ${opportunityName}`,
+                name: opportunityName,
                 description,
                 email_from,
                 partner_id: partner.id,
