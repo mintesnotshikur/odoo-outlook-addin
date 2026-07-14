@@ -102,7 +102,7 @@ async function runPush() {
         const newId = await odooRpc("object", "execute_kw", [
             DB_NAME, uid, pass,
             "crm.lead", "create",
-            [[leadVals]]
+            [leadVals]
         ], {});
 
         status.innerText = `Success! Lead ${newId} linked to ${partner.name}.`;
