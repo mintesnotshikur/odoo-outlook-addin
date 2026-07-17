@@ -95,7 +95,7 @@ async function runPush() {
             ? `Created client ${partner.name}. Creating lead...`
             : `Found client ${partner.name}. Creating lead...`;
         const leadVals = {
-            name: opportunityName|| "No subject,
+            name: opportunityName || "No subject,
             description: description || "",
             email_from,
             partner_id: partner.id ? Number(partner.id) : false,
