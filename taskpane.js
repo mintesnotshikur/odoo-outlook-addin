@@ -1,4 +1,6 @@
-const ODOO_URL = "https://dablo.grace-erp-consultancy.com";
+// const ODOO_URL = "https://dablo.grace-erp-consultancy.com";
+const ODOO_URL = "https://internal.dablolawfirm.com";
+
 const DB_NAME = "dablo_DB"; // Ensure this is your correct DB name
 const JSON_RPC_PATH = "/jsonrpc";
 const ODOO_PROXY_URL = ""; // Optional: point this to your own relay endpoint to avoid browser CORS issues.
