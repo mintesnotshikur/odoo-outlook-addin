@@ -95,11 +95,17 @@ async function runPush() {
             ? `Created client ${partner.name}. Creating lead...`
             : `Found client ${partner.name}. Creating lead...`;
         const leadVals = {
-            name: opportunityName,
-            description,
+            name: opportunityName|| "No subject,
+            description: description || "",
             email_from,
             partner_id: partner.id ? Number(partner.id) : false,
         };
+        console.log("=== LEAD VALS ===", leadVals);
+        console.log("=== ARGS ARRAY ===", [
+            DB_NAME, uid, pass,
+            "crm.lead", "create",
+            [leadVals]
+        ]);
 
         const newId = await odooRpc("object", "execute_kw", [
             DB_NAME, uid, pass,
