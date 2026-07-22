@@ -13,7 +13,7 @@
     <IconUrl DefaultValue="https://officedev.github.io/Office-Add-in-samples/Samples/hello-world/outlook-hello-world/assets/icon-32.png" />
     <AppDomains>
         <AppDomain>https://mintesnotshikur.github.io</AppDomain>
-        <AppDomain>https://dablo.grace-erp-consultancy.com</AppDomain>
+        <AppDomain>https://internal.dablolawfirm.com</AppDomain>
     </AppDomains>
     <Hosts>
         <Host Name="Mailbox" />
