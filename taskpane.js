@@ -106,13 +106,7 @@ async function runPush() {
             "crm.lead", "create",
             [leadVals]
         ]);
-
-        const newId = await odooRpc("object", "execute_kw", [
-            DB_NAME, uid, pass,
-            "crm.lead", "create",
-            [leadVals]
-        ], {});
-
+        
         console.log(JSON.stringify([
             DB_NAME,
             uid,
@@ -122,6 +116,12 @@ async function runPush() {
             [leadVals],
             {}
         ], null, 2));
+
+        const newId = await odooRpc("object", "execute_kw", [
+            DB_NAME, uid, pass,
+            "crm.lead", "create",
+            [leadVals]
+        ], {});
 
         status.innerText = `Success! Lead ${newId} linked to ${partner.name}.`;
     } catch (err) {
