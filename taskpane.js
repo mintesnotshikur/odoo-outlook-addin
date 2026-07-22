@@ -113,6 +113,16 @@ async function runPush() {
             [leadVals]
         ], {});
 
+        console.log(JSON.stringify([
+            DB_NAME,
+            uid,
+            pass,
+            "crm.lead",
+            "create",
+            [leadVals],
+            {}
+        ], null, 2));
+
         status.innerText = `Success! Lead ${newId} linked to ${partner.name}.`;
     } catch (err) {
         status.innerText = `Error: ${err.message}`;
